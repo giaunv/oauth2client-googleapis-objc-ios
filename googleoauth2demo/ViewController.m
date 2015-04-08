@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import "NXOAuth2.h"
 
 //the following items were obtained when registering this app in the Google APIs Console
 //these are all specific to the client application - e.g. this iOS app
@@ -49,6 +50,27 @@ static NSString * const kIDMOAuth2SuccessPagePrefix = @"Success";
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - OAuth2 Logic
+
+- (void) setupOAuth2AccountStore{
+    [[NXOAuth2AccountStore sharedStore] setClientID:kIDMOAuth2ClientId secret:kIDMOAuth2ClientSecret authorizationURL:kIDMOAuth2AuthorizationURL tokenURL:kIDMOAuth2TokenURL redirectURL:kIDMOAuth2RedirectURL forAccountType:kIDMOAuth2AccountType];
+    
+    [[NSNotificationCenter defaultCenter] addObserverForName:NXOAuth2AccountStoreAccountsDidChangeNotification object:[NXOAuth2AccountStore sharedStore] queue:nil usingBlock:^(NSNotification *aNotification){
+        if (aNotification.userInfo) {
+            // account added, we have access
+            // we can now request protected data
+            NSLog(@"Success!! We have an access token.");
+        } else {
+            // account removed, we lost access
+        }
+    }];
+    
+    [[NSNotificationCenter defaultCenter] addObserverForName:NXOAuth2AccountStoreDidFailToRequestAccessNotification object:[NXOAuth2AccountStore sharedStore] queue:nil usingBlock:^(NSNotification *aNotification){
+            NSError *error = [aNotification.userInfo objectForKey:NXOAuth2AccountStoreErrorKey];
+            NSLog(@"Error!! %@", error.localizedDescription);
+    }];
 }
 
 @end
