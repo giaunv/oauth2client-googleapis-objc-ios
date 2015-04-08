@@ -119,6 +119,30 @@ static NSString * const kIDMOAuth2SuccessPagePrefix = @"Success";
         NSString *pageTile = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
         
         // Continue the OAuth2 flow using the info from the page title
+        [self handleOAuth2AccessResult:pageTile];
+    }
+}
+
+- (void)handleOAuth2AccessResult:(NSString *)accessResult{
+    // Parse the page title for success or failure
+    BOOL success = [accessResult rangeOfString:kIDMOAuth2SuccessPagePrefix options:NSCaseInsensitiveSearch].location != NSNotFound;
+    // If success, complete the OAuth2 flow by handling the redirect URL  and obtaining a token
+    if (success) {
+        // Authentication code and details are passed back in the form of a query string in the page title
+        // Parse those arguments out
+        NSString *arguments = accessResult;
+        if ([arguments hasPrefix:kIDMOAuth2SuccessPagePrefix]) {
+            arguments = [arguments substringFromIndex:kIDMOAuth2SuccessPagePrefix.length + 1];
+        }
+        
+        // Append the arguments found in the page title to the redirect URL assigned by Google APIs
+        NSString *redirectURL = [NSString stringWithFormat:@"%@?%@", kIDMOAuth2RedirectURL, arguments];
+        
+        // Finally, complete the flow by calling handleRedirectURL
+        [[NXOAuth2AccountStore sharedStore] handleRedirectURL:[NSURL URLWithString:redirectURL]];
+    } else {
+        // Start over
+        [self requestOAuth2Access];
     }
 }
 
