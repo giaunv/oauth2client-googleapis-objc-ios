@@ -42,11 +42,16 @@ static NSString * const kIDMOAuth2SuccessPagePrefix = @"Success";
     
 }
 
+#pragma mark - View Lifecycle
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     // [self.loginWebView initWithFrame:self.view.frame];
     // self.loginWebView.scalesPageToFit = true;
+    
+    // Setup self as as delegate so we know when the UIWebView has loaded pages
+    self.loginWebView.delegate = self;
     
     [self setupOAuth2AccountStore];
     [self requestOAuth2Access];
@@ -98,6 +103,23 @@ static NSString * const kIDMOAuth2SuccessPagePrefix = @"Success";
         // navigate to the URL returned by NXOAuth2Client
         [self.loginWebView loadRequest:[NSURLRequest requestWithURL:preparedURL]];
     }];
+}
+
+#pragma mark - UIWebViewDelegate methods
+
+- (void)webViewDidFinishLoad:(UIWebView *)webView{
+    // If the UIWebView is showing our authorization URL, show the UIWebView control
+    if ([webView.request.URL.absoluteString rangeOfString:kIDMOAuth2AuthorizationURL options:NSCaseInsensitiveSearch].location != NSNotFound) {
+        self.loginWebView.hidden = NO;
+    } else {
+        // Otherwise hide the UIWebView, we've left the authorization flow
+        self.loginWebView.hidden = YES;
+        
+        // Read the page title from the UIWebView, this is how Google APIs is returning the authorization code and relation information. This is controlled by the redirect URL we choose to use from Google APIs
+        NSString *pageTile = [webView stringByEvaluatingJavaScriptFromString:@"document.title"];
+        
+        // Continue the OAuth2 flow using the info from the page title
+    }
 }
 
 @end
