@@ -10,6 +10,8 @@
 
 @interface ViewController ()
 
+@property (weak, nonatomic) IBOutlet UIWebView *loginWebView;
+
 @end
 
 @implementation ViewController
