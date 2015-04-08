@@ -86,6 +86,7 @@ static NSString * const kIDMOAuth2SuccessPagePrefix = @"Success";
             // account added, we have access
             // we can now request protected data
             NSLog(@"Success!! We have an access token.");
+            [self requestOAuth2ProtectedDetails];
         } else {
             // account removed, we lost access
         }
@@ -144,6 +145,25 @@ static NSString * const kIDMOAuth2SuccessPagePrefix = @"Success";
         // Start over
         [self requestOAuth2Access];
     }
+}
+
+- (void)requestOAuth2ProtectedDetails{
+    NXOAuth2AccountStore *store = [NXOAuth2AccountStore sharedStore];
+    NSArray *accounts = [store accountsWithAccountType:kIDMOAuth2AccountType];
+    
+    [NXOAuth2Request performMethod:@"GET" onResource:[NSURL URLWithString:@"https://www.googleapis.com/oauth2/v1/userinfo"] usingParameters:nil withAccount:accounts[0] sendProgressHandler:^(unsigned long long bytesSend, unsigned long long bytesTotal) {
+        // e.g., update a progress indicator
+    } responseHandler:^(NSURLResponse *response, NSData *responseData, NSError *error) {
+        // Process the response
+        if (responseData) {
+            NSError *error;
+            NSDictionary *userInfo = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableContainers error:&error];
+            NSLog(@"%@", userInfo);
+        }
+        if (error) {
+            NSLog(@"%@", error.localizedDescription);
+        }
+    }];
 }
 
 @end
