@@ -26,7 +26,7 @@ static NSString * const kIDMOAuth2TokenURL = @"https://accounts.google.com/o/oau
 static NSString * const kIDMOAuth2Scope = @"https://www.googleapis.com/auth/userinfo.profile";
 
 //this is just a unique name for the service we are accessing
-static NSString * const kIDMOAuth2AccountType = @"Google API";
+static NSString * const kIDMOAuth2AccountType = @"Google+ API";
 
 //token to look for in Googles response page
 static NSString * const kIDMOAuth2SuccessPagePrefix = @"Success";
@@ -45,6 +45,11 @@ static NSString * const kIDMOAuth2SuccessPagePrefix = @"Success";
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    // [self.loginWebView initWithFrame:self.view.frame];
+    // self.loginWebView.scalesPageToFit = true;
+    
+    [self setupOAuth2AccountStore];
+    [self requestOAuth2Access];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -55,7 +60,21 @@ static NSString * const kIDMOAuth2SuccessPagePrefix = @"Success";
 #pragma mark - OAuth2 Logic
 
 - (void) setupOAuth2AccountStore{
-    [[NXOAuth2AccountStore sharedStore] setClientID:kIDMOAuth2ClientId secret:kIDMOAuth2ClientSecret authorizationURL:kIDMOAuth2AuthorizationURL tokenURL:kIDMOAuth2TokenURL redirectURL:kIDMOAuth2RedirectURL forAccountType:kIDMOAuth2AccountType];
+    //these steps are docmented in the NXOAuth2Client readme.md
+    //https://github.com/nxtbgthng/OAuth2Client
+    //the values used are documented above along with their origin
+    //[[NXOAuth2AccountStore sharedStore] setClientID:kIDMOAuth2ClientId secret:kIDMOAuth2ClientSecret scope:[NSSet setWithObject:kIDMOAuth2Scope] authorizationURL:[NSURL URLWithString:kIDMOAuth2AuthorizationURL] tokenURL:[NSURL URLWithString:kIDMOAuth2TokenURL] redirectURL:[NSURL URLWithString:kIDMOAuth2RedirectURL] forAccountType:kIDMOAuth2AccountType];
+    
+    NSDictionary *googleConfigDict = @{
+                                       kNXOAuth2AccountStoreConfigurationClientID: kIDMOAuth2ClientId,
+                                       kNXOAuth2AccountStoreConfigurationSecret: kIDMOAuth2ClientSecret,
+                                       kNXOAuth2AccountStoreConfigurationScope: [NSSet setWithObjects:kIDMOAuth2Scope, nil],
+                                       kNXOAuth2AccountStoreConfigurationAuthorizeURL: [NSURL URLWithString:kIDMOAuth2AuthorizationURL],
+                                       kNXOAuth2AccountStoreConfigurationTokenURL: [NSURL URLWithString:kIDMOAuth2TokenURL],
+                                       kNXOAuth2AccountStoreConfigurationRedirectURL: [NSURL URLWithString:kIDMOAuth2RedirectURL],
+                                       kNXOAuth2AccountStoreConfigurationTokenType:kIDMOAuth2AccountType
+                                       };
+    [[NXOAuth2AccountStore sharedStore] setConfiguration:googleConfigDict forAccountType:kIDMOAuth2AccountType];
     
     [[NSNotificationCenter defaultCenter] addObserverForName:NXOAuth2AccountStoreAccountsDidChangeNotification object:[NXOAuth2AccountStore sharedStore] queue:nil usingBlock:^(NSNotification *aNotification){
         if (aNotification.userInfo) {
@@ -70,6 +89,14 @@ static NSString * const kIDMOAuth2SuccessPagePrefix = @"Success";
     [[NSNotificationCenter defaultCenter] addObserverForName:NXOAuth2AccountStoreDidFailToRequestAccessNotification object:[NXOAuth2AccountStore sharedStore] queue:nil usingBlock:^(NSNotification *aNotification){
             NSError *error = [aNotification.userInfo objectForKey:NXOAuth2AccountStoreErrorKey];
             NSLog(@"Error!! %@", error.localizedDescription);
+    }];
+}
+
+- (void) requestOAuth2Access {
+    // in order to login to Google APIs using OAuth2 we must show an embedded browser (UI WebView)
+    [[NXOAuth2AccountStore sharedStore] requestAccessToAccountWithType:kIDMOAuth2AccountType withPreparedAuthorizationURLHandler:^(NSURL *preparedURL) {
+        // navigate to the URL returned by NXOAuth2Client
+        [self.loginWebView loadRequest:[NSURLRequest requestWithURL:preparedURL]];
     }];
 }
 
