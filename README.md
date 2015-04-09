@@ -1,10 +1,11 @@
-# An OAuth2Client demo for iOS, lib by nxtbgthng @ nxtbgthng.com,  tutorial by Nathanial Woolls @idmworks.com
+# An OAuth 2 demo for iOS with Objective C, OAuth2Client by nxtbgthng @nxtbgthng.com, Google APIs,  tutorial by Nathanial Woolls @idmworks.com
 
-**Tutorial by Nathanial Woolls @idmworks.com**
+#Credits
 
-[GETTING STARTED WITH OAUTH2CLIENT ON IOS](http://www.idmworks.com/blog/entry/getting-started-with-oauth2client-on-ios)
+**Libraries**
 
-**Credits**
+[OAuth2Client](https://github.com/nxtbgthng/OAuth2Client) by [nxtbgthng](https://github.com/nxtbgthng)
 
-Lib OAuth2Client by [nxtbgthng](https://github.com/nxtbgthng/OAuth2Client)
-Tutorial and source code by [Nathanial Woolls](http://www.idmworks.com/blog/blogger/listings/nathanialwoolls)
+**Tutorials**
+
+[GETTING STARTED WITH OAUTH2CLIENT ON IOS](http://www.idmworks.com/blog/entry/getting-started-with-oauth2client-on-ios) by [Nathanial Woolls](http://www.idmworks.com/blog/blogger/listings/nathanialwoolls)
